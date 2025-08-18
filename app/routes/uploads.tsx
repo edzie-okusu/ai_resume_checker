@@ -1,5 +1,6 @@
 import { AIResponseFormat, prepareInstructions } from "constants/index";
 import React, { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router";
 import FilesUpload from "~/components/FilesUpload";
 import Navbar from "~/components/navbar";
 import { convertPdfToImage } from "~/lib/pdfToImage";
@@ -7,6 +8,7 @@ import { usePuterStore } from "~/lib/puter";
 import { generateUUID } from "~/lib/utils";
 
 const Uploads = () => {
+    const navigate = useNavigate();
     const {auth, fs, ai, isLoading, kv} = usePuterStore();
     const [ isProcessing, setIsProcessing] = useState(false);
     const [statusText, setStatusText] = useState('');
@@ -66,6 +68,7 @@ const Uploads = () => {
 
         setStatusText('Analysis complete! Redirecting to results...');
         console.log(data);
+        navigate(`/resume/${uuid}`);
 
     }   
 
