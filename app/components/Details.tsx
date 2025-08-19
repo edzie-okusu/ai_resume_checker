@@ -1,8 +1,10 @@
 import React from "react";
 
-const Details = () => {
+const Details = ({ feedback }: { feedback: Feedback }) => {
     return (
-        <div className=""></div>
+        <div className="">
+            {/* Render details using feedback here */}
+        </div>
     )
 }
 

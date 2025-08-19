@@ -26,11 +26,11 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  // const { init } = usePuterStore();
+  const { init } = usePuterStore();
 
-  // useEffect(() => {
-  //   init()
-  // }, [init]);
+  useEffect(() => {
+    init()
+  }, [init]);
 
   return (
     <html lang="en">

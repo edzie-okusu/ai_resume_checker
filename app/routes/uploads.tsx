@@ -61,9 +61,17 @@ const Uploads = () => {
         const feedbackText = typeof feedback.message.content === 'string' 
             ? feedback.message.content 
             : feedback.message.content[0].text; 
-        
-        // append feedback to data object
-        data.feedback = JSON.parse(feedbackText);
+
+        let parsedFeedback = null;
+        try {
+          parsedFeedback = JSON.parse(feedbackText);
+        } catch (e) {
+          setStatusText('Error: Feedback format invalid');
+          setIsProcessing(false);
+          return;
+        }
+
+        data.feedback = parsedFeedback;
         await kv.set(`resume: ${uuid}`, JSON.stringify(data));
 
         setStatusText('Analysis complete! Redirecting to results...');
