@@ -16,6 +16,7 @@ const Resume = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [resumeUrl, setResumeUrl] = useState('');
     const [feedback, setFeedback] = useState<Feedback | null>(null);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,26 +25,47 @@ const Resume = () => {
 
     useEffect(() => {
         const loadResume = async () => {
-            const resume = await kv.get(`resume:${id}`);
-            if(!resume) return;
-            const data = JSON.parse(resume);
-            console.log('Loaded resume data:', data);
+            try {
+                setLoading(true);
+                const resume = await kv.get(`resume:${id}`);
+                if (!resume) {
+                    console.error('No resume data found');
+                    setFeedback(null);
+                    return;
+                }
 
-            const resumeBlob = await fs.read(data.resumePath);
-            if(!resumeBlob) return;
+                const data = JSON.parse(resume);
+                console.log('Loaded resume data:', data);
 
-            const pdfBlob = new Blob([resumeBlob], { type: 'application/pdf' });
-            const resumeUrl = URL.createObjectURL(pdfBlob);
-            setResumeUrl(resumeUrl);
+                // Set feedback FIRST
+                setFeedback(data.feedback ?? null);
 
-            const imageBlob = await fs.read(data.imagePath);
-            if(!imageBlob) return;
-            const imageUrl = URL.createObjectURL(imageBlob);
-            setImageUrl(imageUrl);
+                // Load files independently
+                try {
+                    const resumeBlob = await fs.read(data.resumePath);
+                    if (resumeBlob) {
+                        const pdfBlob = new Blob([resumeBlob], { type: 'application/pdf' });
+                        setResumeUrl(URL.createObjectURL(pdfBlob));
+                    }
+                } catch (e) {
+                    console.error('Error loading PDF:', e);
+                }
 
-            setFeedback(data.feedback);
-            console.log('Loaded feedback:', data.feedback);
-        }
+                try {
+                    const imageBlob = await fs.read(data.imagePath);
+                    if (imageBlob) {
+                        setImageUrl(URL.createObjectURL(imageBlob));
+                    }
+                } catch (e) {
+                    console.error('Error loading image:', e);
+                }
+            } catch (e) {
+                console.error('Failed to load resume:', e);
+                setFeedback(null);
+            } finally {
+                setLoading(false);
+            }
+        };
         loadResume();
     }, [id]);
 
@@ -71,7 +93,11 @@ const Resume = () => {
                 </section>
                 <section className="feedback-section">
                     <h2 className="text-4xl !text-black font-bold">Resume Review</h2>
-                    {feedback ? (
+                    {loading ? (
+                        <div className="text-center py-8">
+                            <p>Analyzing your resume…</p>
+                        </div>
+                    ) : feedback ? (
                         <div className="flex flex-col gap-8 animate-in fade-in duration-1000">
                             <Summary feedback={feedback} />
                             <ATS score={feedback.ATS?.score || 0} suggestions={feedback.ATS?.tips || []} />

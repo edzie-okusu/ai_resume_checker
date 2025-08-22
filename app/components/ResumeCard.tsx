@@ -14,7 +14,7 @@ const ResumeCard =({resume: {id, companyName,feedback, jobTitle, imagePath,resum
       const blob = await fs.read(imagePath);
       if(!blob) return;
       let url = URL.createObjectURL(blob);
-      setResumeUrl;
+      setResumeUrl(url);
     }
 
     loadResume();
